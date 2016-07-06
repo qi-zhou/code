@@ -4,13 +4,14 @@ import json
 
 
 def search(value):
-    mcc = value.split(",")[0]
-    mnc = value.split(",")[1]
-    lac = value.split(",")[2]
-    ci = value.split(",")[3]
-    bs = mcc + ',' + mnc + ',' + lac + ',' + ci
+    tmp = value.split(",")[0]
+    mnc = '0{0}'.format(int(eval(tmp)))
+    cell = int(eval(value.split(",")[1]))
+    equipmentId = int(eval(value.split(",")[2]))
+    lac = int(eval(value.split(",")[3]))
+    bs = '460' + ',' + str(mnc) + ',' + str(lac) + ',' + str(cell)
     url = 'http://api.gpsspg.com/bs/?oid=2940&bs=' + bs + '&output=json'
-    print(url)
+    #print(url)
     with request.urlopen(url) as f:
         data = f.read()
         s = json.loads(data.decode('utf-8'))
@@ -19,7 +20,9 @@ def search(value):
             lat = result.get("lat")
             lng = result.get("lng")
             address = result.get("address")
-            print('INSERT INTO gsm_location(mnc,lac,lng,lat,address,expire_time) values({0},{1},{2},{3},{4},{5},)'.format(mnc, lac, lng, lat, address, "2017-6-20"))
+            result = "INSERT INTO barn.gsm_location(mnc,lac,cell,lng,lat,address,expire_time) VALUES({0},{1},{2},'{3}','{4}','{5}','{6}');".format(mnc, lac, cell, lng, lat, address, '2020-7-20')
+            print(result)
+     #       f.write(result)
         elif s.get("status") == 404:
             print("未收录次数据")
         elif s.get("status") == 702:
@@ -44,6 +47,9 @@ def search(value):
 
 if __name__ == '__main__':
     txt = open('/home/zhouqi/code/config.txt', 'r')
+    #f = open("/home/zhouqi/code/result.txt", "a")
     for a in txt.readlines():
         search(a.split()[0])
+    #f.close()
     txt.close()
+
