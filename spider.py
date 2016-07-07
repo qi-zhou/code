@@ -53,5 +53,5 @@ if __name__ == '__main__':
             values_list.append(search(line))
 
     values_str = ", ".join(values_list)
-    out_sql = "INSERT INTO barn.gsm_location (mnc,lac,lng,lat,address,expire_time) VALUES {};".format(values_str)
+    out_sql = "INSERT INTO barn.gsm_location (mnc,lac,cell,lng,lat,address,expire_time) VALUES {};".format(values_str)
     print(out_sql)
