@@ -19,6 +19,7 @@ def search(value):
           '&hex=10&type=&to=1&output=jsonp' \
           '&callback=jQuery11020563021744484645_1467786333143&_=1467786333144'.format(bs)
     req = request.Request(url, headers=reqheaders)
+    status_dict = {404: '未收录此数据', 100: '站点数据维护中', 110: '参数格式错误', 300: '执行数据查询时出错', 900: '拒绝请求'}
     with request.urlopen(req) as f:
         data = f.read().decode('utf-8')
         jieguo = re.findall(r'{.*}', data)
@@ -32,26 +33,21 @@ def search(value):
                           "'" + lat + "'", "'" + address + "'", "'2020-12-31'"]
             single_value = "(" + ", ".join(value_list) + ")"
             return single_value
-        elif s.get("status") == 404:
-            print("未收录次数据")
-        elif s.get("status") == 100:
-            print("站点数据维护中")
-        elif s.get("status") == 110:
-            print("参数格式错误")
-        elif s.get("status") == 300:
-            print("执行数据查询时出错")
-        elif s.get("status") == 900:
-            print("拒绝请求")
+        elif status_dict.__contains__(s.get("status")):
+            print(status_dict.get(s.get("status")))
         else:
             print("位置错误")
 
 
 if __name__ == '__main__':
     values_list = []
-    with open('/home/zhouqi/PycharmProjects/location-ui/fail.txt', 'r') as f:
+    with open('/home/zhouqi/PycharmProjects/code/config.txt', 'r') as f:
         for line in f.readlines():
             values_list.append(search(line))
-
+try:
     values_str = ", ".join(values_list)
     out_sql = "INSERT INTO barn.gsm_location (mnc,lac,cell,lng,lat,address,expire_time) VALUES {};".format(values_str)
+
     print(out_sql)
+except Exception:
+    pass
