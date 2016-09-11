@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from urllib import request
 import re, json
-
+import os
 
 def search(value):
     reqheaders = {
@@ -9,12 +9,14 @@ def search(value):
         'User-Agent': "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)"
                       " Ubuntu Chromium/51.0.2704.79 Chrome/51.0.2704.79 Safari/537.36"
     }
-    tmp = value.split(",")[0]
-    mnc = '0{0}'.format(int(eval(tmp)))
-    cell = int(eval(value.split(",")[1]))
-    equipmentId = int(eval(value.split(",")[2]))
-    lac = int(eval(value.split(",")[3]))
-    bs = '460' + ',' + str(mnc) + ',' + str(lac) + ',' + str(cell)
+
+    match_value = re.search(r"mnc:(\d+).*?,\scell:(\d+).*?,\sequipmentId:(\d+).*?,\slac:(\d+).*?",value)
+    mnc = match_value.group(1)
+    cell = match_value.group(2)
+    equipmentId = match_value.group(3)
+    lac = match_value.group(4)
+
+    bs = '460' + ',' + mnc + '0' + ',' + lac + ',' + cell
     url = 'http://api.gpsspg.com/bss/?oid=159&bs={}' \
           '&hex=10&type=&to=1&output=jsonp' \
           '&callback=jQuery11020563021744484645_1467786333143&_=1467786333144'.format(bs)
@@ -34,16 +36,20 @@ def search(value):
             single_value = "(" + ", ".join(value_list) + ")"
             return single_value
         elif status_dict.__contains__(s.get("status")):
-            print(status_dict.get(s.get("status")))
+            print(bs + ':' + status_dict.get(s.get("status")))
         else:
-            print("位置错误")
+            print(bs + ':' + "位置错误")
 
 
 if __name__ == '__main__':
     values_list = []
-    with open('/home/zhouqi/PycharmProjects/code/config.txt', 'r') as f:
+    maildata_file = 'config.txt'
+    with open(os.path.join(os.getcwd(), maildata_file), 'r') as f:
         for line in f.readlines():
-            values_list.append(search(line))
+            tmp = search(line)
+            if tmp is None:
+                continue
+            values_list.append(tmp)
 try:
     values_str = ", ".join(values_list)
     out_sql = "INSERT INTO barn.gsm_location (mnc,lac,cell,lng,lat,address,expire_time) VALUES {};".format(values_str)
