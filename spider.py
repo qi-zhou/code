@@ -10,11 +10,9 @@ def search(value):
                       " Ubuntu Chromium/51.0.2704.79 Chrome/51.0.2704.79 Safari/537.36"
     }
 
-    match_value = re.search(r"mnc:(\d+).*?,\scell:(\d+).*?,\sequipmentId:(\d+).*?,\slac:(\d+).*?",value)
-    mnc = match_value.group(1)
-    cell = match_value.group(2)
-    equipmentId = match_value.group(3)
-    lac = match_value.group(4)
+    mnc = re.search(r"mnc:(\d+).*?,",value).group(1)
+    cell = re.search(r"cell:(\d+).*?",value).group(1)
+    lac = re.search(r"lac:(\d+).*?",value).group(1)
 
     bs = '460' + ',' + mnc + '0' + ',' + lac + ',' + cell
     url = 'http://api.gpsspg.com/bss/?oid=159&bs={}' \
